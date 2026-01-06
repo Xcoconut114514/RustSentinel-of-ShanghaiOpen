@@ -1,0 +1,24 @@
+# RustSentinel 依赖列表
+# Python 版本要求: >= 3.10
+
+# 核心依赖
+openai>=1.0.0                # OpenAI SDK，用于连接本地模型
+gradio>=4.0.0               # Web UI 框架
+streamlit>=1.28.0           # 备用 Web UI 框架
+
+# 深度学习推理
+vllm>=0.2.0                 # 高性能 LLM 推理引擎
+torch>=2.0.0                # PyTorch 深度学习框架
+
+# 数据处理
+pydantic>=2.0.0             # 数据验证
+numpy>=1.24.0               # 数值计算
+pandas>=2.0.0               # 数据分析（可选）
+
+# 模型下载（可选）
+huggingface-hub>=0.17.0     # HuggingFace 模型下载
+modelscope>=1.9.0           # ModelScope 模型下载（国内推荐）
+
+# 工具库
+python-dotenv>=1.0.0        # 环境变量管理
+requests>=2.31.0            # HTTP 请求
