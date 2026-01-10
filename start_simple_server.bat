@@ -9,7 +9,7 @@ call venv\Scripts\activate
 
 echo.
 echo 安装必要的包...
-pip install flask transformers accelerate -q
+pip install flask flask-cors transformers accelerate -q
 
 echo.
 echo 正在启动服务器...

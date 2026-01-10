@@ -5,6 +5,8 @@
 openai>=1.0.0                # OpenAI SDK，用于连接本地模型
 gradio>=4.0.0               # Web UI 框架
 streamlit>=1.28.0           # 备用 Web UI 框架
+flask>=2.3.0                # Flask Web 框架
+flask-cors>=4.0.0           # Flask CORS 支持
 
 # 深度学习推理
 vllm>=0.2.0                 # 高性能 LLM 推理引擎

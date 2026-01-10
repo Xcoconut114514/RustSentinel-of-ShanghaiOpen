@@ -3,10 +3,12 @@
 使用 Transformers 直接加载模型，提供 OpenAI 兼容的 API
 """
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 app = Flask(__name__)
+CORS(app)  # 启用 CORS 支持
 
 print("正在加载模型...")
 model_path = "./model/deepseek-r1"
