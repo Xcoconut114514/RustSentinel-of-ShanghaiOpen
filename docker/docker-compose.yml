@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  rustsentinel:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: rustsentinel
+    restart: unless-stopped
+    
+    # GPU 配置
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    # 端口映射
+    ports:
+      - "8000:8000"  # vLLM API
+      - "8501:8501"  # Gradio Web UI
+    
+    # 环境变量
+    environment:
+      - MODEL_PATH=/app/models/deepseek-r1-distill
+      - VLLM_PORT=8000
+      - WEB_PORT=8501
+      - GPU_MEMORY_UTILIZATION=0.9
+      - LOG_LEVEL=INFO
+    
+    # 数据卷挂载
+    volumes:
+      - ./models:/app/models  # 模型文件
+      - ./config:/app/config  # 配置文件
+      - ./logs:/app/logs      # 日志文件
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
