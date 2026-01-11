@@ -294,6 +294,148 @@ def health():
         "database": db_status
     })
 
+@app.route('/v1/assistant/chat', methods=['POST'])
+def assistant_chat():
+    """
+    智能客服专用接口
+    用于回答用户关于 RustSentinel 平台的问题
+    """
+    data = request.json
+    messages = data.get('messages', [])
+    
+    # 构建客服专用提示词
+    system_prompt = """你是 RustSentinel 的智能客服助手。请用简洁、友好、具体的中文回答用户问题。
+
+# RustSentinel 平台介绍
+RustSentinel 是一个基于区块链的 Rust 代码安全审计平台，使用 AI 技术自动检测代码安全问题。
+
+# 主要功能
+1. **AI 代码审计**：自动检测 Rust 代码中的安全漏洞
+2. **区块链支付**：使用以太坊钱包支付审计费用（0.001 ETH）
+3. **审计历史**：查看和管理历史审计记录
+4. **安全检查类型**：
+   - 缓冲区溢出（Buffer Overflow）
+   - 整数溢出（Integer Overflow）
+   - 未检查的返回值（Unchecked Return Values）
+   - 空指针解引用（Null Pointer Dereference）
+   - 数据竞争（Data Race）
+   - 内存泄漏（Memory Leak）
+
+# 使用流程（详细步骤）
+1. **连接钱包**
+   - 点击右上角"连接钱包"按钮
+   - 选择 MetaMask 或其他以太坊钱包
+   - 授权连接
+
+2. **输入代码**
+   - 在代码编辑器中粘贴或输入 Rust 代码
+   - 支持完整的 Rust 语法
+
+3. **开始审计**
+   - 点击"开始审计"按钮
+   - 系统会弹出支付确认
+
+4. **支付费用**
+   - 审计费用：0.001 ETH（约 $2-3 USD）
+   - 通过智能合约自动处理
+   - 确认交易后等待区块确认
+
+5. **查看结果**
+   - 审计通常需要 30-60 秒
+   - 结果包括：风险等级、问题描述、修复建议
+   - 可以在"历史记录"中查看所有审计
+
+# 支持的网络
+- Sepolia 测试网（推荐新手）
+- 以太坊主网
+
+# 常见问题
+**Q: 审计需要多长时间？**
+A: 通常 30-60 秒，取决于代码复杂度
+
+**Q: 费用是多少？**
+A: 0.001 ETH per 审计，约 $2-3 USD
+
+**Q: 支持哪些钱包？**
+A: MetaMask、WalletConnect、Coinbase Wallet 等以太坊钱包
+
+**Q: 审计结果准确吗？**
+A: 使用 DeepSeek AI 模型，准确率高，但建议结合人工审查
+
+**Q: 可以审计多大的代码？**
+A: 建议单次审计代码不超过 500 行
+
+# 回答规则
+1. 直接回答问题，不要说"我可能没有完全理解"
+2. 给出具体的数字、步骤、示例
+3. 如果问题确实超出范围，推荐用户查看文档或联系技术支持
+4. 保持友好、专业的语气
+5. 每个回答控制在 100-200 字以内"""
+    
+    prompt = f"System: {system_prompt}\n\n"
+    
+    for msg in messages:
+        role = msg['role']
+        content = msg['content']
+        if role == 'user':
+            prompt += f"User: {content}\n\n"
+        elif role == 'assistant':
+            prompt += f"Assistant: {content}\n\n"
+    
+    prompt += "请用中文简洁回答。\n\nAssistant: "
+    
+    print(f"\n收到客服请求，问题长度: {len(prompt)}")
+    print("开始推理（使用 Ollama）...")
+    
+    start_time = time.time()
+    
+    try:
+        # 调用 Ollama API
+        response = requests.post(
+            OLLAMA_API,
+            json={
+                "model": MODEL_NAME,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,  # 客服对话使用稍高的温度
+                    "num_predict": 512   # 客服回答不需要太长
+                }
+            },
+            timeout=60  # 客服回答超时时间较短
+        )
+        
+        inference_time = time.time() - start_time
+        
+        if response.status_code == 200:
+            result = response.json()
+            assistant_response = result.get('response', '')
+            
+            print(f"推理完成，耗时: {inference_time:.2f} 秒")
+            print(f"响应长度: {len(assistant_response)}")
+            
+            return jsonify({
+                "choices": [{
+                    "message": {
+                        "role": "assistant",
+                        "content": assistant_response
+                    }
+                }]
+            })
+        else:
+            error_msg = f"Ollama API 错误: {response.status_code}"
+            print(error_msg)
+            return jsonify({"error": error_msg}), 500
+            
+    except requests.exceptions.Timeout:
+        error_msg = "推理超时（60秒）"
+        print(error_msg)
+        return jsonify({"error": error_msg}), 504
+    except Exception as e:
+        error_msg = f"错误: {str(e)}"
+        print(error_msg)
+        return jsonify({"error": error_msg}), 500
+
 if __name__ == '__main__':
     print("\n" + "="*50)
     print("Ollama + 数据库服务器启动成功！")
