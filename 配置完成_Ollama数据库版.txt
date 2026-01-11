@@ -1,0 +1,32 @@
+✅ Ollama + 数据库版本配置完成
+
+📁 新增文件：
+1. simple_server_ollama_with_db.py - 结合 Ollama 和数据库的服务器
+2. start_server_with_db_ollama.bat - 启动脚本
+3. Ollama数据库版本说明.md - 详细使用文档
+
+🚀 快速开始：
+1. 确保 Ollama 已安装并运行
+2. 确保 MySQL 服务运行，数据库 'rustsentinel' 已创建
+3. 运行：start_server_with_db_ollama.bat
+
+✨ 主要特性：
+- 使用 Ollama 推理引擎（更快的速度）
+- 自动保存审计记录到 MySQL 数据库
+- 完整的历史记录 API（查询、删除）
+- 健康检查端点
+- 与前端完全兼容
+
+📊 API 端点：
+- POST /v1/chat/completions - 代码审计
+- GET /api/history - 获取历史记录
+- GET /api/history/{id} - 获取单条记录
+- DELETE /api/history/{id} - 删除记录
+- GET /health - 健康检查
+
+🔧 配置说明：
+- 默认模型：deepseek-coder:6.7b
+- 数据库：127.0.0.1:3306/rustsentinel
+- 服务端口：8000
+
+详细文档请查看：Ollama数据库版本说明.md
